@@ -1,17 +1,10 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
-```{r script-options, echo = FALSE}
-options(digits=8)
-library(ggplot2)
-```
+
 
 ## Loading and preprocessing the data
-```{r load-raw-data, echo=TRUE}
+
+```r
 #load raw data from CSV file
 data.raw <- read.csv(unz(description = "activity.zip", filename = "activity.csv"), header = TRUE)
 
@@ -31,9 +24,18 @@ names(data.raw) <- c("steps", "date", "interval", "time")
 str(data.raw)
 ```
 
+```
+## 'data.frame':	17568 obs. of  4 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+##  $ time    : Factor w/ 288 levels "00:00","00:05",..: 1 2 3 4 5 6 7 8 9 10 ...
+```
+
 
 ## What is mean total number of steps taken per day?
-```{r histogram-total-steps}
+
+```r
 #create new table with total daily steps
 data.steps.daily.agg <- aggregate(steps ~ date, data = na.omit(data.raw), FUN = sum)
 
@@ -44,17 +46,21 @@ names(data.steps.daily.agg) <- c("date", "steps.total")
 ggplot(data = data.steps.daily.agg, aes(x = steps.total)) + geom_histogram(na.rm = TRUE, binwidth = 500)
 ```
 
-```{r mean-median-steps}
+![](PA1_template_files/figure-html/histogram-total-steps-1.png)<!-- -->
+
+
+```r
 #calculate mean and median for steps across all days
 steps.daily.mean <- as.integer(mean(data.steps.daily.agg$steps.total, na.rm = TRUE))
 steps.daily.meadian <- as.integer(median(data.steps.daily.agg$steps.total, na.rm = TRUE))
 ```
 
-Daily steps mean is `r steps.daily.mean` and daily steps median is `r steps.daily.meadian`
+Daily steps mean is 10766 and daily steps median is 10765
 
 
 ## What is the average daily activity pattern?
-```{r daily-average}
+
+```r
 #create table with means of steps by inteval.
 data.steps.interval.agg <- aggregate(steps ~ interval + time, data = na.omit(data.raw), FUN = mean)
 
@@ -62,7 +68,8 @@ data.steps.interval.agg <- aggregate(steps ~ interval + time, data = na.omit(dat
 names(data.steps.interval.agg) <- c("interval", "time", "steps.mean")
 ```
 
-```{r time-serias-daily-steps}
+
+```r
 #step.interval.mean.max captures the max mean steps accross all intervals
 step.interval.mean.max <- max(data.steps.interval.agg$steps.mean)
 step.interval.mean.max.interval <- subset(data.steps.interval.agg, steps.mean == step.interval.mean.max)$interval
@@ -75,18 +82,22 @@ ggplot(data = data.steps.interval.agg) +
     geom_vline(mapping = aes(xintercept = step.interval.mean.max.interval), size = 1, colour = "green") #mark inteval with max steps
 ```
 
-The maximum average of steps of `r step.interval.mean.max` was captured in the interval `r step.interval.mean.max.interval` that corresponds to `r step.interval.mean.max.time` o'clock
+![](PA1_template_files/figure-html/time-serias-daily-steps-1.png)<!-- -->
+
+The maximum average of steps of 206.16981132 was captured in the interval 835 that corresponds to 08:35 o'clock
 
 ## Imputing missing values
 Determine the number of intervals with missing data
-```{r missing-data-intervals}
+
+```r
 intervals.missing.data.count <- nrow(subset(data.raw, is.na(data.raw) == TRUE))
 ```
-The total number of intervals with missing data is `r intervals.missing.data.count`.
+The total number of intervals with missing data is 2304.
 
 For every interval with missing step count, a random number will be generated using normal distribution with mean set to maximum 
 
-```{r impute-missing-data}
+
+```r
 #caclulate steps daily mean and sd as 1/5 of mean
 steps.mean.daily <- as.integer(mean(na.omit(data.raw)$steps))
 steps.sd.daily <- as.integer(steps.mean.daily / 5)
@@ -112,24 +123,33 @@ names(data.steps.complete.agg) <- c("date", "steps.total")
 str(data.steps.complete.agg)
 ```
 
-```{r histogram-total-steps-complete-dataset}
+```
+## 'data.frame':	61 obs. of  2 variables:
+##  $ date       : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 2 3 4 5 6 7 8 9 10 ...
+```
+
+
+```r
 #plot hsitgrams comparing total daily steps in the original and complete (impuded) data sets
 ggplot() + geom_histogram(data = data.steps.complete.agg, aes(x = steps.total), na.rm = TRUE, binwidth = 500, colour = "green") +
            geom_histogram(data = data.steps.daily.agg, aes(x = steps.total), na.rm = TRUE, binwidth = 500, colour = "red")
 ```
 
-```{r mean-median-steps-complete-dataset}
+![](PA1_template_files/figure-html/histogram-total-steps-complete-dataset-1.png)<!-- -->
+
+
+```r
 #calculate mean and median for steps across all days for complete (impuded) dataset
 steps.complete.daily.mean <- as.integer(mean(data.steps.complete.agg$steps.total, na.rm = TRUE))
 steps.complete.daily.meadian <- as.integer(median(data.steps.complete.agg$steps.total, na.rm = TRUE))
 ```
 
-Daily steps mean for impuded dataset is `r steps.complete.daily.mean` and median is `r steps.complete.daily.meadian`. This values are slightly below the original mean and median (`r steps.daily.mean` and `r steps.daily.meadian` correspondingly). Also, the the new histogram demonstrates higher occurance of steps in the mid range in "comlete" (impuded) dataset compared to the ordinal dataset with missing values.
 
 Both phenomena is due to the chosen impuding strategy that was based on average steps value.
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r weekend-weekday-differences}
+
+```r
 #append a new column is.weekend to "complete" dataset (default value FALSE)
 new.names <- append(names(data.steps.complete), "is.weekend")
 data.steps.complete <- cbind(data.steps.complete, 
@@ -149,3 +169,5 @@ ggplot(data = data.steps.complete.interval.agg) +
     geom_line(mapping = aes(x = interval, y = steps.mean)) + #plot steps.mean (y-axis) over intervals (x-axis)
     facet_grid(is.weekend ~ .)
 ```
+
+![](PA1_template_files/figure-html/weekend-weekday-differences-1.png)<!-- -->
