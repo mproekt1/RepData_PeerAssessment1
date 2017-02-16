@@ -126,6 +126,7 @@ str(data.steps.complete.agg)
 ```
 ## 'data.frame':	61 obs. of  2 variables:
 ##  $ date       : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 2 3 4 5 6 7 8 9 10 ...
+##  $ steps.total: int  10540 126 11352 12116 13294 15420 11015 10588 12811 9900 ...
 ```
 
 
@@ -144,6 +145,7 @@ steps.complete.daily.mean <- as.integer(mean(data.steps.complete.agg$steps.total
 steps.complete.daily.meadian <- as.integer(median(data.steps.complete.agg$steps.total, na.rm = TRUE))
 ```
 
+Daily steps mean for impuded dataset is 10739 and median is 10600. This values are slightly below the original mean and median (10766 and 10765 correspondingly). Also, the the new histogram demonstrates higher occurance of steps in the mid range in "comlete" (impuded) dataset compared to the ordinal dataset with missing values.
 
 Both phenomena is due to the chosen impuding strategy that was based on average steps value.
 
